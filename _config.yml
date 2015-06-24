@@ -1,7 +1,7 @@
 # General
 name: Charcha 
 description: "An online Audio discussion's platform for any purpose (including programming sessions). "
-
+url : "http://ramaseshan.github.io/charcha"
 markdown: redcarpet
 highlighter: pygments
 
