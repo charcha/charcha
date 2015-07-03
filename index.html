@@ -10,7 +10,6 @@
       <script src="//cdn.webrtc-experiment.com/RTCMultiConnection.js"></script>
     </head>
     <body>
-        <button id="mouse">mouse</button>
         <div class="container-fluid">
           <div class="page-header" id="banner">
             <div class="row">
@@ -35,6 +34,12 @@
         <script>
         
         var a;
+        
+        var name;
+        
+        var mouses = [];
+        
+        var noOfParticipants = 0;
         
         var mouse = document.getElementById("mouse");
         
