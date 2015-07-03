@@ -1,12 +1,42 @@
 <html>
     <head>
         <title>Charcha</title>
+         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <link rel="stylesheet" href="css/bootstrap.css" media="screen">
+        <link rel="stylesheet" href="css/overrides.css" media="screen">
+        <link rel="stylesheet" href="css/style.css" media="screen">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
       <script src="//cdn.webrtc-experiment.com/RTCMultiConnection.js"></script>
     </head>
     <body>
-        <input type=text id="input-text-chat" disabled>
-        <button id="openNewSessionButton">Open New Room</button>
+        <button id="mouse">mouse</button>
+        <div class="container-fluid">
+          <div class="page-header" id="banner">
+            <div class="row">
+              <div class="col-lg-8 col-md-7 col-sm-6">
+                <h1>Charcha</h1>
+                <p class="lead">because discussions matter.</p>
+              </div>
+              <div class="col-lg-4 col-md-5 col-sm-6">
+              </div>
+            </div>
+          </div>
+        </div>
+         <div class="container">
+             <div id="chatbox">
+             </div>
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="Your Name" id="chatname" disabled>
+           <input type="text" class="form-control" placeholder="Chat" id="input-text-chat" disabled>
+        </div>
+          <button id="openNewSessionButton" class="btn btn-primary">Create New Room</button>
+        </div>
         <script>
+        
+        var a;
+        
+        var mouse = document.getElementById("mouse");
         
         var connection = new RTCMultiConnection();
         
@@ -31,12 +61,24 @@
         };
         
         connection.onopen = function(event) {
-            alert('Text chat has been opened between you and ' + event.userid);
+            console.log('Text chat has been opened between you and ' + event.userid);
+            document.getElementById('chatname').disabled = false;
             document.getElementById('input-text-chat').disabled = false;
+            document.getElementById('openNewSessionButton').style.visibility = "none";
         };
         
         connection.onmessage = function(event) {
-            alert('Target user (event.userid) said: ' + event.data);
+            if (event.data["type"] == "chat")
+            {
+                var msg = event.data["data"]["name"] + " : " + event.data["data"]["chat"];
+                document.querySelector("#chatbox").innerHTML += "<br/>" + msg;
+            }
+            else if (event.data["type"] == "mouse")
+            {
+                mouse.style.position = "absolute";
+                mouse.style.left = event.data["data"]["x"];
+                mouse.style.top = event.data["data"]["y"];
+            }
         };
         
         document.getElementById('input-text-chat').onkeyup = function(e) {
@@ -44,9 +86,19 @@
             var value = this.value.replace(/^\s+|\s+$/g, '');
             if(!value.length) return; // if empty-spaces
             
-            connection.send( value );
+            var name = document.getElementById("chatname").value;
+            
+            a = { "type": "chat" , "data": {"name": name, "chat": value}};
+            
+            connection.send( a );
+            document.querySelector("#chatbox").innerHTML += "<br/>" +a["data"]["name"] + " : " + a["data"]["chat"];
             this.value = '';
         };
+        
+        window.onmousemove = function(event){
+            a = { "type": "mouse" , "data": {"x": event.clientX, "y": event.clientY}};
+            connection.send( a );
+        }
         
         </script>
     </body>
