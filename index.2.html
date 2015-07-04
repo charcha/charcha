@@ -6,8 +6,11 @@
         <link rel="stylesheet" href="css/bootstrap.css" media="screen">
         <link rel="stylesheet" href="css/overrides.css" media="screen">
         <link rel="stylesheet" href="css/style.css" media="screen">
+        <link rel="stylesheet" href="css/ace.css" media="screen">
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <script src="//cdn.webrtc-experiment.com/RTCMultiConnection.js"></script>
+        <script src="js/bcsocket.js"></script> 
+        <script src="js/share.js"></script>
     </head>
     <body>
         <div class="container-fluid">
@@ -27,7 +30,7 @@
              <div class="row">
                  
                  <div class="col-sm-12 col-md-8 col-lg-8">
-                    Text Editor to come here
+                     <textarea id="editor" disabled>Loading...</textarea>
                  </div>
                  
                  <div class="col-sm-12 col-md-4 col-lg-4">
@@ -44,7 +47,6 @@
                 </div>
              </div>
         </div>
-        <!--<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>-->
         <script>
         
         var a;
@@ -100,10 +102,8 @@
             else if (event.data["type"] == "leave")
             {
                 var msg = event.data["data"]["name"] + " has left";
-                document.querySelector("#chat").innerHTML += "<br/>" + msg;
+                document.querySelector("#chatbox").innerHTML += "<br/>" + msg;
             }
-            var objDiv = document.getElementById("#chat");
-            objDiv.scrollTop = objDiv.scrollHeight;
             // else if (event.data["type"] == "mouse")
             // {
             //     var mousename = event.data["data"]["name"];
@@ -135,11 +135,10 @@
             a = { "type": "chat" , "data": {"name": name, "chat": value}};
             
             connection.send( a );
-            var msg = "<li><div class='header'><strong class='primary-font'>" + a["data"]["name"] + "</strong></div>";
-                msg +=  "<p>" + a["data"]["chat"] + "</p></li>";
-            //document.querySelector("#chat").appendChild(document.createTextNode(msg));  
+            //document.querySelector("#chatbox").innerHTML += "<br/>" +a["data"]["name"] + " : " + a["data"]["chat"];
+            var msg = "<li class=><div class='header'><strong class='primary-font'>" + a["data"]["name"] + "</strong></div>";
+                msg +=  "<p class='pull-right'>" + a["data"]["chat"] + "</p></li>";
             document.querySelector("#chat").innerHTML +=  msg;
-            // $("#chat").append(msg)    
             this.value = '';
         };
         
@@ -155,5 +154,19 @@
         };
         
         </script>
+        <script>
+            var elem = document.getElementById('editor');
+            
+            sharejs.open('hello', 'text', 'http://sharejs.org:8000/channel',function(error, doc) {
+            	if (error) {
+            		console.log(error);
+            	} else {
+            		elem.disabled = false;
+            		doc.attach_textarea(elem);
+            	}
+            });
+		</script>
     </body>
+<!--    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+-->
 </html>

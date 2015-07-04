@@ -7,7 +7,7 @@
         <link rel="stylesheet" href="css/overrides.css" media="screen">
         <link rel="stylesheet" href="css/style.css" media="screen">
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-      <script src="//cdn.webrtc-experiment.com/RTCMultiConnection.js"></script>
+        <script src="//cdn.webrtc-experiment.com/RTCMultiConnection.js"></script>
     </head>
     <body>
         <div class="container-fluid">
@@ -18,30 +18,40 @@
                 <p class="lead">because discussions matter.</p>
               </div>
               <div class="col-lg-4 col-md-5 col-sm-6">
+                <button id="openNewSessionButton" class="btn btn-primary pull-right">Create New Room</button>
               </div>
             </div>
           </div>
         </div>
          <div class="container">
-             <div id="chatbox">
+             <div class="row">
+                 
+                 <div class="col-sm-12 col-md-8 col-lg-8">
+                    Text Editor to come here
+                 </div>
+                 
+                 <div class="col-sm-12 col-md-4 col-lg-4">
+                      <div class="panel panel-primary">
+                         <div class="panel-heading">Chat</div>
+                        <div class="panel-body">
+                         <div id="chatbox">
+                             <ul class="chat" id="chat"></ul>
+                        </div>
+                     </div>
+                      <div class="form-group">
+                           <input type="text" class="form-control" placeholder="Chat" id="input-text-chat" disabled>
+                    </div>
+                </div>
              </div>
-          <div class="form-group">
-            <input type="text" class="form-control" placeholder="Your Name" id="chatname" disabled>
-           <input type="text" class="form-control" placeholder="Chat" id="input-text-chat" disabled>
         </div>
-          <button id="openNewSessionButton" class="btn btn-primary">Create New Room</button>
-        </div>
+        <!--<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>-->
         <script>
         
         var a;
         
-        var name;
+        var name = prompt("Please enter your name", "");
         
-        var mouses = [];
-        
-        var noOfParticipants = 0;
-        
-        var mouse = document.getElementById("mouse");
+        var mouses = {};
         
         var connection = new RTCMultiConnection();
         
@@ -54,7 +64,9 @@
         
         // on getting local or remote media stream
         connection.onstream = function(e) {
-            document.body.appendChild(e.mediaElement);
+            var element = e.mediaElement;
+            element.style.display = "none";
+            document.body.appendChild(element);
         };
         
         // setup signaling channel
@@ -67,23 +79,52 @@
         
         connection.onopen = function(event) {
             console.log('Text chat has been opened between you and ' + event.userid);
-            document.getElementById('chatname').disabled = false;
             document.getElementById('input-text-chat').disabled = false;
-            document.getElementById('openNewSessionButton').style.visibility = "none";
+            document.getElementById('openNewSessionButton').style.display = "none";
+            a = { "type": "join" , "data": {"name": name}};
+            connection.send( a );
         };
         
         connection.onmessage = function(event) {
             if (event.data["type"] == "chat")
             {
-                var msg = event.data["data"]["name"] + " : " + event.data["data"]["chat"];
-                document.querySelector("#chatbox").innerHTML += "<br/>" + msg;
+                var msg = "<li><div class='header'><strong class='primary-font'>" + event.data["data"]["name"] + "</strong></div>";
+                msg +=  "<p>" + event.data["data"]["chat"] + "</p></li>";
+                document.querySelector("#chat").innerHTML +=  msg;
             }
-            else if (event.data["type"] == "mouse")
+            else if (event.data["type"] == "join")
             {
-                mouse.style.position = "absolute";
-                mouse.style.left = event.data["data"]["x"];
-                mouse.style.top = event.data["data"]["y"];
+                var msg = event.data["data"]["name"] + " has joined";
+                document.querySelector("#chat").innerHTML += "<li><center>" + msg + "</center></li>";
             }
+            else if (event.data["type"] == "leave")
+            {
+                var msg = event.data["data"]["name"] + " has left";
+                document.querySelector("#chat").innerHTML += "<br/>" + msg;
+            }
+            var objDiv = document.getElementById("#chat");
+            objDiv.scrollTop = objDiv.scrollHeight;
+            // else if (event.data["type"] == "mouse")
+            // {
+            //     var mousename = event.data["data"]["name"];
+            //     if (mouses[mousename])
+            //     {
+            //         var mouse = mouses[mousename]["mouse"];
+            //         mouse.style.position = "absolute";
+            //         mouse.style.left = event.data["data"]["x"];
+            //         mouse.style.top = event.data["data"]["y"];
+            //     }
+            //     else
+            //     {
+            //         var mouse = document.createElement("H6");
+            //         mouse.innerHTML = mousename;
+            //         document.body.appendChild(mouse);
+            //         mouses[mousename] = {"mouse": mouse}
+            //         mouse.style.position = "absolute";
+            //         mouse.style.left = event.data["data"]["x"];
+            //         mouse.style.top = event.data["data"]["y"];
+            //     }
+            // }
         };
         
         document.getElementById('input-text-chat').onkeyup = function(e) {
@@ -91,22 +132,28 @@
             var value = this.value.replace(/^\s+|\s+$/g, '');
             if(!value.length) return; // if empty-spaces
             
-            var name = document.getElementById("chatname").value;
-            
             a = { "type": "chat" , "data": {"name": name, "chat": value}};
             
             connection.send( a );
-            document.querySelector("#chatbox").innerHTML += "<br/>" +a["data"]["name"] + " : " + a["data"]["chat"];
+            var msg = "<li><div class='header'><strong class='primary-font'>" + a["data"]["name"] + "</strong></div>";
+                msg +=  "<p>" + a["data"]["chat"] + "</p></li>";
+            //document.querySelector("#chat").appendChild(document.createTextNode(msg));  
+            document.querySelector("#chat").innerHTML +=  msg;
+            // $("#chat").append(msg)    
             this.value = '';
         };
         
-        window.onmousemove = function(event){
-            a = { "type": "mouse" , "data": {"x": event.clientX, "y": event.clientY}};
-            connection.send( a );
-        }
+        // window.onmousemove = function(event){
+        //     a = { "type": "mouse" , "data": {"name": name, "x": event.clientX, "y": event.clientY}};
+        //     connection.send( a );
+        //     setTimeout(1000);
+        // }
+        
+        connection.onleave = function(e) {
+            a = { "type": "leave" , "data": {"name": name}};
+            connection.send( a );  
+        };
         
         </script>
     </body>
-<!--    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
--->
 </html>
